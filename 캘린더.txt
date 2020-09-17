@@ -1,0 +1,132 @@
+      
+$year = $_GET['year'] ?? date("Y");
+        $month = $_GET['month'] ?? date("n");
+        $beforeMonth = $month;
+        $afterMonth = $month;
+        $beforeYear = $year;
+        $afterYear = $year;
+        if(($month + 1) > 12) {
+            $afterYear = $year + 1;
+            $afterMonth = 1;
+        }else {
+            $afterMonth = $month + 1;
+        }
+        if(($month - 1) < 1) {
+            $beforeYear = $year - 1;
+            $beforeMonth = 12;
+        }else {
+            $beforeMonth = $month - 1;
+        }
+        $beforeButton = "<button class='btn btn-info' onclick='location.replace(`/cal?year=$beforeYear&month=$beforeMonth`);'>이전</button>";
+        $afterButton = "<button class='btn btn-info' onclick='location.replace(`/cal?year=$afterYear&month=$afterMonth`);'>다음</button>";
+        $view = "<span class='year'>${year}</span>년 <span class='year'>${month}</span>월";
+        $arr = [];
+        $head = "
+        <div class='head-box box rel'>일</div>
+        <div class='head-box box rel'>월</div>
+        <div class='head-box box rel'>화</div>
+        <div class='head-box box rel'>수</div>
+        <div class='head-box box rel'>목</div>
+        <div class='head-box box rel'>금</div>
+        <div class='head-box box rel'>토</div>
+        ";
+        $body = "";
+        $week = date("w", strtotime("${year}-${month}"));
+        $max = date("t", strtotime("${year}-${month}"));
+        $cnt = 1;
+        $weekMap = [
+            "일요일"=>0,
+            "월요일"=>1,
+            "화요일"=>2,
+            "수요일"=>3,
+            "목요일"=>4,
+            "금요일"=>5,
+            "토요일"=>6,
+        ];
+        for($i = 0; $i < ceil($max / 7); $i++) {
+            for($j = 0; $j < 7; $j++) {
+                if($i == 0 && $j < $week || $cnt > $max) $body .= "<div class='box body-box rel'></div>";
+                else if($cnt <= $max){
+                    $list = DB::fetchAll("SELECT * FROM writer_event WHERE dates <= ? and ? <= end_date", ["${year}-${month}-${cnt}", "${year}-${month}-${cnt}"]);
+                    $arr = array_merge($arr, (array)$list);
+                    $body .= "<div class='box body-box rel'>${cnt}";
+                    foreach($list as $v) {
+                        if ($weekMap[$v->week] === $j) {
+                            $body .= "<p>{$v->writer}</p>";
+                        }
+                    }
+                    $body .= "</div>";
+                    $cnt++;
+                }
+            }
+        }
+
+
+========================== 다른 버전 ====================================
+$year = $_GET['year'] ?? date("Y");
+        $month = $_GET['month'] ?? date("n");
+
+        $beforeMonth = $month;
+        $afterMonth = $month;
+        $beforeYear = $year;
+        $afterYear = $year;
+
+        if($month + 1 > 12) {
+            $aftereYear = $year + 1;
+            $aftereMonth = 1;
+        }else {
+            $aftereMonth = $month + 1;
+        }
+
+        if($month - 1 < 1) {
+            $beforeYear = $year - 1;
+            $beforeMonth = 12;
+        }else {
+            $beforeMonth = $month - 1;
+        }
+
+        $beforeButton = "<button class='btn btn-info' onclick='location.replace(`/cal?year={$beforeYear}&month={$beforeMonth}`);'></button>";
+        $afterButton = "<button class='btn btn-info' onclick='location.replace(`/cal?year={$afterYear}&month={$afterMonth}`);'></button>";
+
+        $head = "
+        <div class='box box-head'>일</div>
+        <div class='box box-head'>월</div>
+        <div class='box box-head'>화</div>
+        <div class='box box-head'>수</div>
+        <div class='box box-head'>목</div>
+        <div class='box box-head'>금</div>
+        <div class='box box-head'>토</div>
+        ";
+
+        $body = "";
+        $arr = [];
+        $view = "<span class='year'>${year}</span>년 <span class='year'>${month}</span>월";
+        $week = date("w", strtotime("${year}-${month}"));
+        $max = date("t", strtotime("${year}-${month}"));
+        $weekMap = ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"];
+        $list = DB::fetchAll("SELECT * FROM writer_event");
+        $cnt = 1;
+        for($i = 0; $i < ceil($max / 7); $i++) {
+            for($j = 0; $j < 7; $j++) {
+                if($i == 0 && $j < $week || $cnt > $max) $body .= "<div class='box rel body-box'></div>";
+                else if($cnt <= $max) {
+                    $now = strtotime("{$year}-{$month}-{$cnt}");
+                    $w = date("w", $now);
+
+                    $body .= "<div class='box rel body-box'><span class='day'>${cnt}</span>";
+                    $arr = array_merge($arr, (array)$list);
+                    foreach ($list as $v) {
+                       $startTime = strtotime($v->dates);
+                       $endTime = strtotime("{$v->dates} + 1 months");
+                       $test = date("Y-m-d", $endTime);
+                       if ($startTime <= $now && $now <= $endTime) {
+                           if($weekMap[$w] === $v->week) {
+                                  $body .= "<p class='writer' data-end_date='{$test}'>{$v->writer}</p>";
+                           }
+                       }
+                    }
+                    $body .= "</div>";
+                    $cnt++;
+                }
+            }
+        }

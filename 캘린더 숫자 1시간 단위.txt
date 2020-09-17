@@ -1,0 +1,7 @@
+let stime = "06:20";
+let etime = "10:20";
+let step =  Number(etime.replace(':', '')) - Number(stime.replace(':', ''));
+for(let i = 0; i < step; i += 100) {
+    const base = `0${Number(stime.replace(':', '')) + i}`.substr(-4);
+    console.log(`${base.substr(0, 2)}:${base.substr(2, 4)}`);
+}

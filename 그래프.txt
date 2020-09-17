@@ -1,0 +1,53 @@
+let list = <?= json_encode($reser_list) ?>;
+let val = "";
+let writer_arc = $("#writer_arc")[0], grade_arc = $("#grade_arc")[0];
+let waCtx = writer_arc.getContext("2d"), gaCtx = grade_arc.getContext("2d");
+writer_arc.width = 1440 / 2;
+writer_arc.height = $(".cover > .flex:first-child").height();
+grade_arc.width = 1440 / 2;
+grade_arc.height = $(".cover > .flex:last-child").height();
+function load() {
+    let writer_list = Object.entries(list.reduce((acc, acc2) => {
+        acc[acc2.writer] = (acc[acc2.writer] || 0) + 1;
+        return acc;
+    }  , {}));
+    let grade_list = Object.entries(list.reduce((acc, acc2) => {
+        acc[acc2.school] = (acc[acc2.school] || 0) + 1;
+        return acc;
+    }  , {}));
+    let writer_start = 0;
+    for(let [key, value] of writer_list) {
+        const max = Math.max(...writer_list.map(v => v[1]));
+        const all = writer_list.reduce((acc, acc2) => acc += acc2[1] , 0);
+        const color = "#" + Math.round(Math.random() * 0xffffff).toString(16);
+        const ratio = value / all * Math.PI * 2;
+        const w = value / max * 100;
+        const [x, y] = [writer_arc.width / 2, writer_arc.height / 2];
+        waCtx.fillStyle = color;
+        waCtx.beginPath();
+        waCtx.moveTo(x, y);
+        waCtx.arc(x,y, 100, writer_start, writer_start + ratio);
+        waCtx.fill();
+        waCtx.closePath();
+        writer_start += ratio;
+        $(".writer_rect").append(`<div class='box rel' style='width: ${w}%; height: 50px; background: ${color}; margin:10px 0px;'></div>`);
+    }
+    let grade_start = 0;
+    for(let [key, value] of grade_list) {
+        const max = Math.max(...grade_list.map(v => v[1]));
+        const all = grade_list.reduce((acc, acc2) => acc += acc2[1] , 0);
+        const color = "#" + Math.round(Math.random() * 0xffffff).toString(16);
+        const ratio = value / all * Math.PI * 2;
+        const w = value / max * 100;
+        const [x, y] = [grade_arc.width / 2, grade_arc.height / 2];
+        gaCtx.fillStyle = color;
+        gaCtx.beginPath();
+        gaCtx.moveTo(x, y);
+        gaCtx.arc(x,y, 100, grade_start, grade_start + ratio);
+        gaCtx.fill();
+        gaCtx.closePath();
+        grade_start += ratio;
+        $(".grade_rect").append(`<div class='box rel' style='width: ${w}%; height: 50px; background: ${color}; margin:10px 0px;'></div>`);
+    }
+}
+load();
